@@ -3,10 +3,12 @@ require_relative 'Letter'
 
 HEADER_FILE = 'headers/header'
 HEADER_SPACE = 'headers/space'
+HEADER_SMALL_SPACE = 'headers/small_space'
+HEADER_SPACE_TOP = 'headers/space_top'
 HEADER_GROUND = 'headers/header2'
 
 FINAL_NAME_SIZE = 18
-FINAL_NAME_HEIGHT = 12
+FINAL_NAME_HEIGHT = 8
 
 VICTIMS = [
     'quentin',
@@ -53,7 +55,13 @@ def display_ascii(array)
         display << str
     end
 
+    f = File.open HEADER_SPACE_TOP
+    header = "\n" << f.readlines.join('')
+    puts header
     puts display.join "\n"
+    f = File.open HEADER_SMALL_SPACE
+    header = "\n" << f.readlines.join('')
+    puts header
 end
 
 ###############################################################################
@@ -77,8 +85,8 @@ percent = 0
     end
 
     cariage_returns = 200
-    dl_bar = x / 10
-    spaces = 10 + 5
+    dl_bar = x / 2
+    spaces = 50 + 5
     print "#{"\r" * cariage_returns}#{' ' * (spaces)}#{percent+=1}%"
     print "#{"\r" *  cariage_returns}#{"=" * dl_bar}>"
 end
@@ -140,11 +148,18 @@ loop do
     # to avoid useless suspense while only a few letters are missing.
     place_one_forced = removed >= FINAL_NAME_SIZE - victim.length
 
-    if !can_place_one && to_remove > 0 && rand(10) > 4
+    3.times do
+        randomize final_name_letters
+        display_ascii final_name_letters
+        sleep 0.2
+        puts  `clear`
+    end
+
+    if !can_place_one && to_remove > 0 # && rand(10) > 4
         final_name_letters.pop
         removed += 1
         to_remove -= 1
-    elsif place_one_forced || can_place_one && rand(10) > 4
+    elsif place_one_forced || can_place_one # && rand(10) > 3
         # Choose a random letter of the victim and add it to the final array
         index = rand victim_indexes.length
         letter_index = victim_indexes[index]
@@ -159,13 +174,6 @@ loop do
         display_ascii final_name_letters
         sleep 0.2
         puts `clear`
-    else
-        4.times do
-            randomize final_name_letters
-            display_ascii final_name_letters
-            sleep 0.2
-            puts  `clear`
-        end
     end
 end
 
