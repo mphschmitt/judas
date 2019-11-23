@@ -4,9 +4,9 @@ require_relative 'Letter'
 HEADER_FILE = 'headers/header'
 HEADER_SPACE = 'headers/space'
 HEADER_GROUND = 'headers/header2'
-LETTERS_FOLDER = 'letters'
 
-FINAL_NAME_SIZE = 20
+FINAL_NAME_SIZE = 18
+FINAL_NAME_HEIGHT = 12
 
 VICTIMS = [
     'quentin',
@@ -22,17 +22,44 @@ VICTIMS = [
 
 # Alphabet
 $ALPHABET = ('a'..'z').to_a
+$ALEPHBET = []
+
+index = 0
+('a'..'z').each do |letter|
+    $ALEPHBET[index] = Letter.new letter
+    puts $ALEPHBET[index]
+    index += 1
+end
 
 def randomize(array)
     array.each do |l|
         next if l.correct_position
-        l.char = $ALPHABET[rand $ALPHABET.length]
+        l.change_letter $ALPHABET[rand $ALPHABET.length]
     end
+end
+
+def display_ascii(array)
+    display = []
+
+    FINAL_NAME_HEIGHT.times.with_index do |line|
+        str = ''
+        array.each do |letter|
+            str << "\e[31m" if letter.correct_position
+            unless letter.representation[line].nil?
+                str << letter.representation[line].join('')
+            end
+            str << "\e[0m" if letter.correct_position
+        end
+        display << str
+    end
+
+    puts display.join "\n"
 end
 
 ###############################################################################
 #                               HEADERS && MENU
 ###############################################################################
+
 f = File.open HEADER_FILE
 header = "\n" << f.readlines.join('')
 puts header
@@ -71,6 +98,10 @@ sleep 3
 #                               HEADERS && MENU
 ###############################################################################
 
+###############################################################################
+#                               RANDOM VICTIM CHOICE
+###############################################################################
+
 # Choose victim and obtain its letters.
 # Create an array of index to select random letter only once later on.
 victim = VICTIMS[rand VICTIMS.length]
@@ -79,13 +110,19 @@ victim_indexes = (0...victim_letters.length).to_a
 
 # empty array of 20 letters
 final_name_letters = []
-FINAL_NAME_SIZE.times do
-    final_name_letters << Small_letter.new($ALPHABET[rand $ALPHABET.length])
+FINAL_NAME_SIZE.times.with_index do |line|
+    final_name_letters << Letter.new($ALPHABET[rand $ALPHABET.length])
 end
+
+display_ascii final_name_letters
 
 # Compute the number of letters to remove every turn
 to_remove = FINAL_NAME_SIZE - victim.length
 ratio = (to_remove.to_f / victim.length).ceil + 1
+
+###############################################################################
+#                               RANDOM VICTIM CHOICE
+###############################################################################
 
 can_place_one = true
 place_one_forced = false
@@ -114,18 +151,19 @@ loop do
         letter = victim_letters[letter_index]
         victim_indexes.delete_at index
 
-        final_name_letters[letter_index] = Small_letter.new letter
+        final_name_letters[letter_index].change_letter letter
         final_name_letters[letter_index].correct_position = true
         placed += 1
         can_place_one = false
 
-        puts final_name_letters.join ''
+        display_ascii final_name_letters
+        sleep 0.2
         puts `clear`
     else
-        6.times do
+        4.times do
             randomize final_name_letters
-            puts final_name_letters.join ''
-            sleep 0.1
+            display_ascii final_name_letters
+            sleep 0.2
             puts  `clear`
         end
     end
@@ -135,41 +173,4 @@ while final_name_letters.length > victim.length
     final_name_letters.pop
 end
 
-puts final_name_letters.join ''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# alephbet = []
-# 
-# index = 0
-# ('a'..'z').each do |letter|
-#     puts "#{LETTERS_FOLDER + '/' + letter}"
-#     alephbet[index] = Letter.new(LETTERS_FOLDER + '/' + letter)
-#     alephbet[index].print
-#     index += 1
-# end
+display_ascii final_name_letters
