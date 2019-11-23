@@ -68,39 +68,41 @@ end
 #                               HEADERS && MENU
 ###############################################################################
 
-f = File.open HEADER_FILE
-header = "\n" << f.readlines.join('')
-puts header
+unless ARGV[0] == "--no-intro"
+    f = File.open HEADER_FILE
+    header = "\n" << f.readlines.join('')
+    puts header
 
-percent = 0
-(1..100).each do |x|
-    if x > 89 || x < 60 || (x > 78 && x < 87)
-        sleep 0.05
-    elsif x > 88
-        sleep 2
-    elsif x > 75
-        sleep 1
-    elsif x > 60
+    percent = 0
+    (1..100).each do |x|
+        if x > 89 || x < 60 || (x > 78 && x < 87)
+            sleep 0.05
+        elsif x > 88
+            sleep 2
+        elsif x > 75
+            sleep 1
+        elsif x > 60
+            sleep 0.1
+        end
+
+        cariage_returns = 200
+        dl_bar = x / 2
+        spaces = 50 + 5
+        print "#{"\r" * cariage_returns}#{' ' * (spaces)}#{percent+=1}%"
+        print "#{"\r" *  cariage_returns}#{"=" * dl_bar}>"
+    end
+    print "#{"\r" *  200}#{" " * 100}"
+
+    f = File.readlines(HEADER_SPACE).each do |l|
+        puts l
         sleep 0.1
     end
-
-    cariage_returns = 200
-    dl_bar = x / 2
-    spaces = 50 + 5
-    print "#{"\r" * cariage_returns}#{' ' * (spaces)}#{percent+=1}%"
-    print "#{"\r" *  cariage_returns}#{"=" * dl_bar}>"
+    f = File.readlines(HEADER_GROUND).each do |l|
+        puts l
+        sleep 0.1
+    end
+    sleep 3
 end
-print "#{"\r" *  200}#{" " * 100}"
-
-f = File.readlines(HEADER_SPACE).each do |l|
-    puts l
-    sleep 0.1
-end
-f = File.readlines(HEADER_GROUND).each do |l|
-    puts l
-    sleep 0.1
-end
-sleep 3
 
 ###############################################################################
 #                               HEADERS && MENU
