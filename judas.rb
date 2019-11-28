@@ -16,7 +16,6 @@ VICTIMS = [
     'bachir',
     'axel',
     'matthieu',
-    'paul',
     'seif',
     'paul',
     'mathias'
@@ -29,7 +28,6 @@ $ALEPHBET = []
 index = 0
 ('a'..'z').each do |letter|
     $ALEPHBET[index] = Letter.new letter
-    puts $ALEPHBET[index]
     index += 1
 end
 
@@ -124,8 +122,6 @@ FINAL_NAME_SIZE.times.with_index do |line|
     final_name_letters << Letter.new($ALPHABET[rand $ALPHABET.length])
 end
 
-display_ascii final_name_letters
-
 # Compute the number of letters to remove every turn
 to_remove = FINAL_NAME_SIZE - victim.length
 ratio = (to_remove.to_f / victim.length).ceil + 1
@@ -157,11 +153,11 @@ loop do
         puts  `clear`
     end
 
-    if !can_place_one && to_remove > 0 # && rand(10) > 4
+   if !can_place_one && to_remove > 0
         final_name_letters.pop
         removed += 1
         to_remove -= 1
-    elsif place_one_forced || can_place_one # && rand(10) > 3
+    elsif place_one_forced || can_place_one
         # Choose a random letter of the victim and add it to the final array
         index = rand victim_indexes.length
         letter_index = victim_indexes[index]
