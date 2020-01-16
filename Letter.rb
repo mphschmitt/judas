@@ -1,7 +1,11 @@
 LETTERS_FOLDER = 'letters'
 
 class Letter
-    attr_reader :width, :height, :representation, :letter
+    attr_reader :width,
+		:height,
+		:representation,
+		:letter
+
     attr_accessor :correct_position
 
     def initialize(letter)
