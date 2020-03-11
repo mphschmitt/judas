@@ -7,6 +7,8 @@ HEADER_SMALL_SPACE = 'headers/small_space'
 HEADER_SPACE_TOP = 'headers/space_top'
 HEADER_GROUND = 'headers/header2'
 
+VICTIMS_FILE_NAME = ".victims"
+
 FINAL_NAME_SIZE = 18
 FINAL_NAME_HEIGHT = 8
 
@@ -16,10 +18,10 @@ VICTIMS = [
     'bachir',
     'axel',
     'matthieu',
-    'paul',
     'seif',
     'paul',
-    'mathias'
+    'mathias',
+    'makram'
 ]
 
 # Alphabet
@@ -29,7 +31,6 @@ $ALEPHBET = []
 index = 0
 ('a'..'z').each do |letter|
     $ALEPHBET[index] = Letter.new letter
-    puts $ALEPHBET[index]
     index += 1
 end
 
@@ -62,6 +63,30 @@ def display_ascii(array)
     f = File.open HEADER_SMALL_SPACE
     header = "\n" << f.readlines.join('')
     puts header
+end
+
+###############################################################################
+#                               VARIOUS COMMANDS
+###############################################################################
+
+if ARGV[0] == "--help" || ARGV[0] == "-h"
+  puts "-c, --clean"
+  puts "\tForget all previous sacrifices! You were nothing but pathetic insignificant worms not worthy of being remembered anyway!"
+  puts "--no-intro"
+  puts "\tSkip the intro and directly condemn someone to the eternal raging volcanic fire of Schiehallion!"
+  puts "-h, --help"
+  puts "\tIsn't it obvious?"
+  return
+end
+
+if ARGV[0] == "--clean" || ARGV[0] == "-c"
+  begin
+    File.delete VICTIMS_FILE_NAME
+    puts "All previous victims were ereased from history and no living creature will ever remeber their pathetic worthless existence!"
+  rescue
+    puts "No previous sacrifices to forget. Bring new ones!"
+  end
+  return
 end
 
 ###############################################################################
@@ -105,18 +130,38 @@ unless ARGV[0] == "--no-intro"
 end
 
 ###############################################################################
-#                               HEADERS && MENU
-###############################################################################
-
-###############################################################################
 #                               RANDOM VICTIM CHOICE
 ###############################################################################
 
+# Open or create file of previous victims
+previous_victims = []
+file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
+
+file_victims.each_line do |name|
+  previous_victims << name.strip
+end
+
+# If all victims have been betrayed, then remove the file and recreate it!
+if previous_victims.size >= VICTIMS.size
+  file_victims.close unless file_victims.nil? or file_victims.closed?
+  File.delete VICTIMS_FILE_NAME
+  file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
+  previous_victims = []
+end
+
 # Choose victim and obtain its letters.
 # Create an array of index to select random letter only once later on.
-victim = VICTIMS[rand VICTIMS.length]
+victims_cpy = VICTIMS.dup
+while true
+  victim = victims_cpy[rand victims_cpy.length]
+  break if !previous_victims.include? victim
+  victims_cpy.delete victim
+end
 victim_letters = victim.split ''
 victim_indexes = (0...victim_letters.length).to_a
+
+# Write victim in the file of previous_victims
+file_victims.puts victim
 
 # empty array of 20 letters
 final_name_letters = []
@@ -131,7 +176,7 @@ to_remove = FINAL_NAME_SIZE - victim.length
 ratio = (to_remove.to_f / victim.length).ceil + 1
 
 ###############################################################################
-#                               RANDOM VICTIM CHOICE
+#                               MAIN ALGO
 ###############################################################################
 
 can_place_one = true
