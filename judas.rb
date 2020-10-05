@@ -1,183 +1,176 @@
-require_relative 'Letter'
+#!/bin/ruby
 
+# judas Denouce your colleagues
+# Copyright (C) 2020  Mathias Schmitt
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-HEADER_FILE = 'headers/header'
-HEADER_SPACE = 'headers/space'
-HEADER_SMALL_SPACE = 'headers/small_space'
-HEADER_SPACE_TOP = 'headers/space_top'
-HEADER_GROUND = 'headers/header2'
+# frozen_string_literal: true
 
-VICTIMS_FILE_NAME = ".victims"
+# This class is used to handle letters, their postions and their representation.
+class Letter
+  attr_reader :representation, :letter
+  attr_accessor :correct_position
 
+  def initialize(letter)
+    @letter = letter
+    @correct_position = false
+    @representation = File.readlines('letters' + '/' + letter, chomp: true).map! { |line| line.split '' }
+  end
+
+  def change_letter(new_letter)
+    initialize new_letter
+  end
+
+  def to_s
+    ret = []
+    @representation.each { |line| ret << line.join('') }
+    ret.join "\n"
+  end
+end
+
+VICTIMS_FILE_NAME = '.victims'
 FINAL_NAME_SIZE = 18
 FINAL_NAME_HEIGHT = 8
 
-VICTIMS = [
-    'quentin',
-    'thomas',
-    'bachir',
-    'axel',
-    'matthieu',
-    'seif',
-    'paul',
-    'mathias',
-    'makram'
-]
+ALPHABET = ('a'..'z').to_a
 
-# Alphabet
-$ALPHABET = ('a'..'z').to_a
-$ALEPHBET = []
-
-index = 0
-('a'..'z').each do |letter|
-    $ALEPHBET[index] = Letter.new letter
-    index += 1
-end
-
-def randomize(array)
-    array.each do |l|
-        next if l.correct_position
-        l.change_letter $ALPHABET[rand $ALPHABET.length]
+def display_ascii(array, header_space_top, header_space_small)
+  str = ''
+  FINAL_NAME_HEIGHT.times do |i|
+    array.each do |letter|
+      str += "\e[31m" if letter.correct_position
+      str += letter.representation[i].join('') unless letter.representation[i].nil?
+      str += "\e[0m" if letter.correct_position
     end
+    str += "\n"
+  end
+
+  puts header_space_top + str + header_space_small
 end
 
-def display_ascii(array)
-    display = []
+def chose_victim(condemned)
+  # Open or create file of previous victims
+  previous_victims = []
+  file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
 
-    FINAL_NAME_HEIGHT.times.with_index do |line|
-        str = ''
-        array.each do |letter|
-            str << "\e[31m" if letter.correct_position
-            unless letter.representation[line].nil?
-                str << letter.representation[line].join('')
-            end
-            str << "\e[0m" if letter.correct_position
-        end
-        display << str
-    end
+  file_victims.each_line { |name| previous_victims << name.strip }
 
-    f = File.open HEADER_SPACE_TOP
-    header = "\n" << f.readlines.join('')
-    puts header
-    puts display.join "\n"
-    f = File.open HEADER_SMALL_SPACE
-    header = "\n" << f.readlines.join('')
-    puts header
+  # If all victims have been betrayed, then remove the file and recreate it
+  if previous_victims.size >= condemned.size
+    file_victims.close
+    File.delete VICTIMS_FILE_NAME
+    file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
+    previous_victims = []
+  end
+
+  possible_victims = condemned - previous_victims
+  victim = possible_victims.sample
+
+  # Write victim in the file of previous_victims
+  file_victims.puts victim
+  file_victims.close
+
+  victim
 end
 
-###############################################################################
-#                               VARIOUS COMMANDS
-###############################################################################
+# VARIOUS COMMANDS
 
-if ARGV[0] == "--help" || ARGV[0] == "-h"
-  puts "-c, --clean"
-  puts "\tForget all previous sacrifices! You were nothing but pathetic insignificant worms not worthy of being remembered anyway!"
-  puts "--no-intro"
+if ARGV[0] == '--help' || ARGV[0] == '-h'
+  puts '-c, --clean'
+  puts "\tForget all previous sacrifices! You were nothing but pathetic insignificant worms not worthy of being " \
+    'remembered anyway!'
+  puts '--no-intro'
   puts "\tSkip the intro and directly condemn someone to the eternal raging volcanic fire of Schiehallion!"
-  puts "-h, --help"
+  puts '-h, --help'
   puts "\tIsn't it obvious?"
   return
 end
 
-if ARGV[0] == "--clean" || ARGV[0] == "-c"
+if ARGV[0] == '--clean' || ARGV[0] == '-c'
   begin
     File.delete VICTIMS_FILE_NAME
-    puts "All previous victims were ereased from history and no living creature will ever remeber their pathetic worthless existence!"
+    puts 'All previous victims were ereased from history and no living creature will ever remeber their pathetic ' \
+      'worthless existence!'
   rescue
-    puts "No previous sacrifices to forget. Bring new ones!"
+    puts 'No previous sacrifices to forget. Bring new ones!'
   end
   return
 end
 
-###############################################################################
-#                               HEADERS && MENU
-###############################################################################
+# HEADERS && MENU
 
-unless ARGV[0] == "--no-intro"
-    f = File.open HEADER_FILE
-    header = "\n" << f.readlines.join('')
-    puts header
+unless ARGV[0] == '--no-intro'
+  header = ''
+  File.open('headers/header') { |f| header += "\n" + f.readlines.join('') }
+  puts header
 
-    percent = 0
-    (1..100).each do |x|
-        if x > 89 || x < 60 || (x > 78 && x < 87)
-            sleep 0.05
-        elsif x > 88
-            sleep 2
-        elsif x > 75
-            sleep 1
-        elsif x > 60
-            sleep 0.1
-        end
-
-        cariage_returns = 200
-        dl_bar = x / 2
-        spaces = 50 + 5
-        print "#{"\r" * cariage_returns}#{' ' * (spaces)}#{percent+=1}%"
-        print "#{"\r" *  cariage_returns}#{"=" * dl_bar}>"
+  percent = 0
+  (1..100).each do |x|
+    if x > 89 || x < 60 || (x > 78 && x < 87)
+      sleep 0.05
+    elsif x > 88
+      sleep 2
+    elsif x > 75
+      sleep 1
+    elsif x > 60
+      sleep 0.1
     end
-    print "#{"\r" *  200}#{" " * 100}"
 
-    f = File.readlines(HEADER_SPACE).each do |l|
-        puts l
-        sleep 0.1
-    end
-    f = File.readlines(HEADER_GROUND).each do |l|
-        puts l
-        sleep 0.1
-    end
-    sleep 3
+    cariage_returns = 200
+    dl_bar = x / 2
+    spaces = 50 + 5
+    print "#{"\r" * cariage_returns}#{' ' * spaces}#{percent += 1}%"
+    print "#{"\r" * cariage_returns}#{'=' * dl_bar}>"
+  end
+  print "#{"\r" * 200}#{' ' * 100}"
+
+  File.readlines('headers/space').each do |l|
+    puts l
+    sleep 0.1
+  end
+  File.readlines('headers/header2').each do |l|
+    puts l
+    sleep 0.1
+  end
+  sleep 3
 end
 
-###############################################################################
-#                               RANDOM VICTIM CHOICE
-###############################################################################
+# RANDOM VICTIM CHOICE
 
-# Open or create file of previous victims
-previous_victims = []
-file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
+condemned = []
+File.open('condemned', 'r') { |f| condemned = f.readlines(chomp: true) }
 
-file_victims.each_line do |name|
-  previous_victims << name.strip
-end
-
-# If all victims have been betrayed, then remove the file and recreate it!
-if previous_victims.size >= VICTIMS.size
-  file_victims.close unless file_victims.nil? or file_victims.closed?
-  File.delete VICTIMS_FILE_NAME
-  file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
-  previous_victims = []
-end
-
-# Choose victim and obtain its letters.
-# Create an array of index to select random letter only once later on.
-victims_cpy = VICTIMS.dup
-while true
-  victim = victims_cpy[rand victims_cpy.length]
-  break if !previous_victims.include? victim
-  victims_cpy.delete victim
-end
+victim = chose_victim(condemned)
 victim_letters = victim.split ''
 victim_indexes = (0...victim_letters.length).to_a
 
-# Write victim in the file of previous_victims
-file_victims.puts victim
-
-# empty array of 20 letters
+# array of 20 random letters
 final_name_letters = []
-FINAL_NAME_SIZE.times.with_index do |line|
-    final_name_letters << Letter.new($ALPHABET[rand $ALPHABET.length])
-end
-
-display_ascii final_name_letters
+FINAL_NAME_SIZE.times.with_index { final_name_letters << Letter.new(ALPHABET.sample) }
 
 # Compute the number of letters to remove every turn
 to_remove = FINAL_NAME_SIZE - victim.length
 ratio = (to_remove.to_f / victim.length).ceil + 1
 
-###############################################################################
-#                               MAIN ALGO
-###############################################################################
+# MAIN ALGO
+
+header_space_top = ''
+File.open('headers/space_top') { |f| header_space_top += "\n" + f.readlines.join('') }
+
+header_space_small = ''
+File.open('headers/small_space') { |f| header_space_small += "\n" + f.readlines.join('') }
 
 can_place_one = true
 place_one_forced = false
@@ -185,47 +178,48 @@ current_ratio = 0.0
 removed = 0.0
 placed = 0.0
 loop do
-    break if victim_indexes.length.zero?
+  break if victim_indexes.length.zero?
 
-    # We can place a character if we removed enough useless characters.
-    current_ratio = (removed / placed).floor if placed != 0.0
-    can_place_one = true if current_ratio > ratio 
+  # We can place a character if we removed enough useless characters.
+  current_ratio = (removed / placed).floor if placed != 0.0
+  can_place_one = true if current_ratio > ratio
 
-    # All useless letters have been removed. Force filling the correct characters
-    # to avoid useless suspense while only a few letters are missing.
-    place_one_forced = removed >= FINAL_NAME_SIZE - victim.length
+  # All useless letters have been removed. Force filling the correct characters
+  # to avoid useless suspense while only a few letters are missing.
+  place_one_forced = removed >= FINAL_NAME_SIZE - victim.length
 
-    3.times do
-        randomize final_name_letters
-        display_ascii final_name_letters
-        sleep 0.2
-        puts  `clear`
+  3.times do
+    # Randomize letters which are not placed yet
+    final_name_letters.each do |l|
+        l.change_letter ALPHABET.sample if !l.correct_position
     end
+    display_ascii final_name_letters, header_space_top, header_space_small
+    sleep 0.2
+    puts  `clear`
+  end
 
-    if !can_place_one && to_remove > 0 # && rand(10) > 4
-        final_name_letters.pop
-        removed += 1
-        to_remove -= 1
-    elsif place_one_forced || can_place_one # && rand(10) > 3
-        # Choose a random letter of the victim and add it to the final array
-        index = rand victim_indexes.length
-        letter_index = victim_indexes[index]
-        letter = victim_letters[letter_index]
-        victim_indexes.delete_at index
-
-        final_name_letters[letter_index].change_letter letter
-        final_name_letters[letter_index].correct_position = true
-        placed += 1
-        can_place_one = false
-
-        display_ascii final_name_letters
-        sleep 0.2
-        puts `clear`
-    end
-end
-
-while final_name_letters.length > victim.length
+  if !can_place_one && to_remove.positive?
     final_name_letters.pop
+    removed += 1
+    to_remove -= 1
+  elsif place_one_forced || can_place_one
+    # Choose a random letter of the victim and add it to the final array
+    index = rand victim_indexes.length
+    letter_index = victim_indexes[index]
+    letter = victim_letters[letter_index]
+    victim_indexes.delete_at index
+
+    final_name_letters[letter_index].change_letter letter
+    final_name_letters[letter_index].correct_position = true
+    placed += 1
+    can_place_one = false
+
+    display_ascii final_name_letters, header_space_top, header_space_small
+    sleep 0.2
+    puts `clear`
+  end
 end
 
-display_ascii final_name_letters
+final_name_letters.pop while final_name_letters.length > victim.length
+
+display_ascii final_name_letters, header_space_top, header_space_small
