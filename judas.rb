@@ -65,7 +65,7 @@ def chose_victim(condemned)
   previous_victims = []
   file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
 
-  file_victims.each_line { |name| previous_victims << name.strip }
+  file_victims.each_line { |name| previous_victims << name.downcase.strip }
 
   # If all victims have been betrayed, then remove the file and recreate it
   if previous_victims.size >= condemned.size
@@ -151,6 +151,7 @@ end
 
 condemned = []
 File.open('condemned', 'r') { |f| condemned = f.readlines(chomp: true) }
+condemned.each { |name| name.downcase! }
 
 victim = chose_victim(condemned)
 victim_letters = victim.split ''
