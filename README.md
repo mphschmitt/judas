@@ -73,7 +73,7 @@ There is a lot of suspense too. It's like watching Columbo, except it is actuall
 Looks like the program's name is very fitting! Who could that be?
 ![Who can it be](assets/fitting_name.png)
 
-Or maybe not. I'm not willing totake that risk...
+Or maybe not. I'm not willing to take that risk...
 ![That's incredibly beautilful](assets/jean.png)
 
 # License

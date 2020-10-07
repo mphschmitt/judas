@@ -1,24 +1,26 @@
 #!/bin/ruby
 
-# judas Denouce your colleagues
-# Copyright (C) 2020  Mathias Schmitt
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+=begin
+judas Denounce your colleagues
+Copyright (C) 2020  Mathias Schmitt
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+=end
 
 # frozen_string_literal: true
 
-# This class is used to handle letters, their postions and their representation.
+# This class is used to handle letters, their postion and their representation.
 class Letter
   attr_reader :representation, :letter
   attr_accessor :correct_position
@@ -34,9 +36,7 @@ class Letter
   end
 
   def to_s
-    ret = []
-    @representation.each { |line| ret << line.join('') }
-    ret.join "\n"
+    @representation.each { |line| line.join('') }.join "\n"
   end
 end
 
@@ -118,14 +118,15 @@ unless ARGV[0] == '--no-intro'
 
   percent = 0
   (1..100).each do |x|
-    if x > 89 || x < 60 || (x > 78 && x < 87)
-      sleep 0.05
-    elsif x > 88
-      sleep 2
-    elsif x > 75
-      sleep 1
-    elsif x > 60
+    case x
+    when 60..75
       sleep 0.1
+    when 78...87
+      sleep 0.5
+    when 88
+      sleep 2
+    else
+      sleep 0.05
     end
 
     cariage_returns = 200
@@ -136,14 +137,8 @@ unless ARGV[0] == '--no-intro'
   end
   print "#{"\r" * 200}#{' ' * 100}"
 
-  File.readlines('headers/space').each do |l|
-    puts l
-    sleep 0.1
-  end
-  File.readlines('headers/header2').each do |l|
-    puts l
-    sleep 0.1
-  end
+  File.readlines('headers/space').each { |l| puts l; sleep 0.1 }
+  File.readlines('headers/header2').each { |l| puts l; sleep 0.1 }
   sleep 3
 end
 
@@ -151,7 +146,7 @@ end
 
 condemned = []
 File.open('condemned', 'r') { |f| condemned = f.readlines(chomp: true) }
-condemned.each { |name| name.downcase! }
+condemned.each(&:downcase)
 
 victim = chose_victim(condemned)
 victim_letters = victim.split ''
@@ -187,13 +182,11 @@ loop do
 
   # All useless letters have been removed. Force filling the correct characters
   # to avoid useless suspense while only a few letters are missing.
-  place_one_forced = removed >= FINAL_NAME_SIZE - victim.length
+  place_one_forced = removed >= (FINAL_NAME_SIZE - victim.length)
 
   3.times do
     # Randomize letters which are not placed yet
-    final_name_letters.each do |l|
-        l.change_letter ALPHABET.sample if !l.correct_position
-    end
+    final_name_letters.each { |l| l.change_letter ALPHABET.sample unless l.correct_position }
     display_ascii final_name_letters, header_space_top, header_space_small
     sleep 0.2
     puts  `clear`
