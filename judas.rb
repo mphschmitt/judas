@@ -45,6 +45,7 @@ end
 VICTIMS_FILE_NAME = '.victims'
 FINAL_NAME_SIZE = 18
 FINAL_NAME_HEIGHT = 8
+VERSION = '1.0.0'
 
 ALPHABET = ('a'..'z').to_a
 intro = true
@@ -117,7 +118,7 @@ OptionParser.new do |parser|
 
   parser.on('-v', '--version', 'output version informations and exit') do
     puts \
-      "omnis #{Omnis::VERSION}\n\n"\
+      "judas #{VERSION}\n\n"\
       "Copyright (C) 2020 Mathias Schmitt\n"\
       "License GPL\n"\
       'This is free software, and you are welcome to change and'\
