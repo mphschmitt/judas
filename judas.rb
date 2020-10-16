@@ -1,7 +1,5 @@
 #!/bin/ruby
 
-require 'optparse'
-
 =begin
 judas Denounce your colleagues
 Copyright (C) 2020  Mathias Schmitt
@@ -21,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 =end
 
 # frozen_string_literal: true
+
+require 'optparse'
 
 # This class is used to handle letters, their postion and their representation.
 class Letter
