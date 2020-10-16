@@ -1,5 +1,7 @@
 #!/bin/ruby
 
+require 'optparse'
+
 =begin
 judas Denounce your colleagues
 Copyright (C) 2020  Mathias Schmitt
@@ -25,13 +27,13 @@ class Letter
   attr_reader :representation, :letter
   attr_accessor :correct_position
 
-  def initialize(letter)
+  def initialize letter
     @letter = letter
     @correct_position = false
     @representation = File.readlines('letters' + '/' + letter, chomp: true).map! { |line| line.split '' }
   end
 
-  def change_letter(new_letter)
+  def change_letter new_letter
     initialize new_letter
   end
 
@@ -45,8 +47,9 @@ FINAL_NAME_SIZE = 18
 FINAL_NAME_HEIGHT = 8
 
 ALPHABET = ('a'..'z').to_a
+intro = true
 
-def display_ascii(array, header_space_top, header_space_small)
+def display_ascii array, header_space_top, header_space_small
   str = ''
   FINAL_NAME_HEIGHT.times do |i|
     array.each do |letter|
@@ -60,7 +63,7 @@ def display_ascii(array, header_space_top, header_space_small)
   puts header_space_top + str + header_space_small
 end
 
-def chose_victim(condemned)
+def chose_victim condemned
   # Open or create file of previous victims
   previous_victims = []
   file_victims = File.open(VICTIMS_FILE_NAME, 'a+')
@@ -87,31 +90,46 @@ end
 
 # VARIOUS COMMANDS
 
-if ARGV[0] == '--help' || ARGV[0] == '-h'
-  puts '-c, --clean'
-  puts "\tForget all previous sacrifices! You were nothing but pathetic insignificant worms not worthy of being " \
-    'remembered anyway!'
-  puts '--no-intro'
-  puts "\tSkip the intro and directly condemn someone to the eternal raging volcanic fire of Schiehallion!"
-  puts '-h, --help'
-  puts "\tIsn't it obvious?"
-  return
-end
+OptionParser.new do |parser|
+  parser.banner = \
+    "Usage: ruby judas.rb [OPTIONS]\n"\
+    'Randomly denounce someone'
 
-if ARGV[0] == '--clean' || ARGV[0] == '-c'
-  begin
-    File.delete VICTIMS_FILE_NAME
-    puts 'All previous victims were ereased from history and no living creature will ever remeber their pathetic ' \
-      'worthless existence!'
-  rescue
-    puts 'No previous sacrifices to forget. Bring new ones!'
+  parser.on('-h', '--help', 'This help message') { puts parser; exit }
+
+  parser.on('-c', '--clean', 'Forget all previous sacrifices! You were nothing'\
+      ' but pathetic insignificant worms not worthy of being remembered'\
+      ' anyway!') do
+    begin
+      File.delete VICTIMS_FILE_NAME
+      puts 'All previous victims were ereased from history and no living '\
+        'creature will ever remember their pathetic worthless existence!'
+    rescue
+      puts 'No previous sacrifices to forget. Bring new ones!'
+    end
+    exit
   end
-  return
-end
+
+  parser.on('-n', '--no-intro', 'Skip the intro and directly condemn someone'\
+      ' to the eternal raging volcanic fire of Schiehallion!') do
+    intro = false
+  end
+
+  parser.on('-v', '--version', 'output version informations and exit') do
+    puts \
+      "omnis #{Omnis::VERSION}\n\n"\
+      "Copyright (C) 2020 Mathias Schmitt\n"\
+      "License GPL\n"\
+      'This is free software, and you are welcome to change and'\
+        " redistribute it\n"\
+      "This program comes with ABSOLUTELY NO WARRANTY.\n"
+    exit
+  end
+end.parse!
 
 # HEADERS && MENU
 
-unless ARGV[0] == '--no-intro'
+if intro
   header = ''
   File.open('headers/header') { |f| header += "\n" + f.readlines.join('') }
   puts header

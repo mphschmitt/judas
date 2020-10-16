@@ -14,7 +14,6 @@ Should you accelerate the pace ? Maybe even ... run ?!
     
 Of course not!
 
-
 With **Judas**, you can now involve other people  into doing what you do not like to do. Just tell them you'll let fate decide who will do that thankless task.
 
 Add everyone's name in the `condemned` file. Judas will chose one person among the list.
@@ -48,7 +47,7 @@ You can reset the *memory* of the program by using:
 ruby judas.rb --clean
 ```
 
-You can achive the same effect by deleting yourself the `.victims` file:
+You can achive the same effect by deleting the `.victims` file yourself:
 ```
 rm .victims
 ```
