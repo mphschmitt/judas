@@ -94,7 +94,7 @@ end
 OptionParser.new do |parser|
   parser.banner = \
     "Usage: ruby judas.rb [OPTIONS]\n"\
-    'Randomly denounce someone'
+    'Denounce you colleagues'
 
   parser.on('-h', '--help', 'This help message') { puts parser; exit }
 
